@@ -3,7 +3,7 @@
 
 buildOcamlJane rec {
   name = "ppx_sexp_conv";
-  hash = "1kgbmlc11w5jhbhmy5n0f734l44zwyry48342dm5qydi9sfzcgq2";
+  hash = "1y47s8nw64sbyx1psfx1hfl4l9301l7nvm2i8yxrh5iwdffwaxh5";
   propagatedBuildInputs = [ ppx_core ppx_tools ppx_type_conv sexplib];
 
   meta = with stdenv.lib; {

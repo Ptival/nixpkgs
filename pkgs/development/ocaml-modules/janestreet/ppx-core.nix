@@ -1,10 +1,14 @@
-{stdenv, buildOcamlJane, ppx_tools}:
+{stdenv, buildOcamlJane, jbuilder
+, ocaml-compiler-libs, ppx_ast, ppx_tools}:
 
 buildOcamlJane rec {
   name = "ppx_core";
-  hash = "0df7vyai488lfkyh8szw2hvn22jsyrkfvq1b91j1s0g0y27nnfax";
+  hash = "1dqznn1a4x1g8r0mrwcvk67dhyslqd00x64ks42mmx9y99kqshj7";
+  buildInputs = [ jbuilder ppx_ast ];
   propagatedBuildInputs =
-    [ ppx_tools ];
+    [ ocaml-compiler-libs ppx_tools ];
+  inherit (jbuilder) installPhase;
+  noConfigure = true;
 
   meta = with stdenv.lib; {
     description = "PPX standard library";

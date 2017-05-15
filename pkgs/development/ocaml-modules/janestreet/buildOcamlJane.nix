@@ -1,8 +1,9 @@
 { buildOcaml, opam, js_build_tools, ocaml_oasis_46, fetchurl } :
 
-{ name, version ? "113.33.03", buildInputs ? [],
+{ name, version ? "v0.9", buildInputs ? [],
   hash ? "",
-  minimumSupportedOcamlVersion ? "4.02", ...
+  noConfigure ? false,
+  minimumSupportedOcamlVersion ? "4.03", ...
 }@args:
 
 buildOcaml (args // {
@@ -18,7 +19,8 @@ buildOcaml (args // {
 
   dontAddPrefix = true;
 
-  configurePhase = "./configure --prefix $out";
+  configurePhase =
+    if noConfigure then "" else "./configure --prefix $out";
 
   buildPhase = "OCAML_TOPLEVEL_PATH=`ocamlfind query findlib`/.. make";
 
