@@ -245,6 +245,7 @@ stdenv.mkDerivation ({
   name = "${pname}-${version}";
 
   outputs = [ "out" ]
+         ++ (optional doCheck "codescape" )
          ++ (optional enableSeparateDataOutput "data")
          ++ (optional enableSeparateDocOutput "doc")
          ++ (optional enableSeparateBinOutput "bin");
@@ -387,7 +388,8 @@ stdenv.mkDerivation ({
 
   checkPhase = ''
     runHook preCheck
-    ${setupCommand} test ${testTarget}
+    mkdir $codescape
+    ${setupCommand} test ${testTarget} 2>&1 | ${coreutils}/bin/tee "$codescape/tests.log"
     runHook postCheck
   '';
 
@@ -465,6 +467,10 @@ stdenv.mkDerivation ({
       inherit propagatedBuildInputs otherBuildInputs allPkgconfigDepends;
       haskellBuildInputs = isHaskellPartition.right;
       systemBuildInputs = isHaskellPartition.wrong;
+      # Added by Valentin
+      inherit executableHaskellDepends; # run-time dependencies
+      inherit libraryHaskellDepends;    # build    dependencies
+      inherit testHaskellDepends;       # test     dependencies
     };
 
     isHaskellLibrary = isLibrary;
