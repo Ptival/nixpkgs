@@ -245,7 +245,8 @@ stdenv.mkDerivation ({
   name = "${pname}-${version}";
 
   outputs = [ "out" ]
-         ++ (optional doCheck "codescape" )
+         ++ [ "codescape" ]
+         # ++ (optional doCheck "codescape" )
          ++ (optional enableSeparateDataOutput "data")
          ++ (optional enableSeparateDocOutput "doc")
          ++ (optional enableSeparateBinOutput "bin");
@@ -388,8 +389,7 @@ stdenv.mkDerivation ({
 
   checkPhase = ''
     runHook preCheck
-    mkdir $codescape
-    ${setupCommand} test ${testTarget} 2>&1 | ${coreutils}/bin/tee "$codescape/tests.log"
+    ${setupCommand} test ${testTarget}
     runHook postCheck
   '';
 
@@ -409,6 +409,12 @@ stdenv.mkDerivation ({
   # 2. 'id:\n
   #         very-long-descriptive-useful-name-0.0.1-9yvw8HF06tiAXuxm5U8KjO'
   installPhase = ''
+    # For Codescape, run the tests regardless of `doCheck`
+    runHook preCheck
+    mkdir -p $codescape
+    ${setupCommand} test ${testTarget} 2>&1 | ${coreutils}/bin/tee "$codescape/tests.log" || true
+    runHook postCheck
+
     runHook preInstall
 
     ${if !isLibrary then "${setupCommand} install" else ''
