@@ -237,6 +237,28 @@ let
       continue
     fi
   '';
+
+  skipCodescapeHack =
+    false
+    || pname == "alex"
+    || pname == "cabal"
+    || pname == "ghc"
+    || pname == "happy"
+    || pname == "hscolour"
+    || pname == "mtl"
+  ;
+
+  codescapeInstallPhase =
+    if skipCodescapeHack
+    then ""
+    else ''
+    # For Codescape, run the tests regardless of `doCheck`
+    runHook preCheck
+    mkdir -p $codescape
+    ${setupCommand} test ${testTarget} 2>&1 | ${coreutils}/bin/tee "$codescape/tests.log" || true
+    runHook postCheck
+    '';
+
 in stdenv.lib.fix (drv:
 
 assert allPkgconfigDepends != [] -> pkgconfig != null;
@@ -245,8 +267,8 @@ stdenv.mkDerivation ({
   name = "${pname}-${version}";
 
   outputs = [ "out" ]
-         ++ [ "codescape" ]
-         # ++ (optional doCheck "codescape" )
+         # do not modify the `ghc` derivation for performance reasons!
+         ++ (if skipCodescapeHack then [] else [ "codescape" ])
          ++ (optional enableSeparateDataOutput "data")
          ++ (optional enableSeparateDocOutput "doc")
          ++ (optional enableSeparateBinOutput "bin");
@@ -409,13 +431,7 @@ stdenv.mkDerivation ({
   # 2. 'id:\n
   #         very-long-descriptive-useful-name-0.0.1-9yvw8HF06tiAXuxm5U8KjO'
   installPhase = ''
-    # For Codescape, run the tests regardless of `doCheck`
-    runHook preCheck
-    mkdir -p $codescape
-    ${setupCommand} test ${testTarget} 2>&1 | ${coreutils}/bin/tee "$codescape/tests.log" || true
-    runHook postCheck
-
-    runHook preInstall
+    ${codescapeInstallPhase}runHook preInstall
 
     ${if !isLibrary then "${setupCommand} install" else ''
       ${setupCommand} copy
