@@ -1,11 +1,11 @@
-{ stdenv, fetchFromGitHub, autoreconfHook, pkgconfig
+{ stdenv, lib, fetchFromGitHub, autoreconfHook, pkgconfig
 , libcap, ncurses
 , withGtk ? false, gtk2 ? null }:
 
 assert withGtk -> gtk2 != null;
 
 stdenv.mkDerivation rec {
-  pname = "mtr";
+  pname = "mtr${lib.optionalString withGtk "-gui"}";
   version = "0.93";
 
   src = fetchFromGitHub {
@@ -30,7 +30,9 @@ stdenv.mkDerivation rec {
 
   nativeBuildInputs = [ autoreconfHook pkgconfig ];
 
-  buildInputs = [ libcap ncurses ] ++ stdenv.lib.optional withGtk gtk2;
+  buildInputs = [ ncurses ]
+    ++ stdenv.lib.optional withGtk gtk2
+    ++ stdenv.lib.optional stdenv.isLinux libcap;
 
   enableParallelBuilding = true;
 
@@ -38,7 +40,7 @@ stdenv.mkDerivation rec {
     description = "A network diagnostics tool";
     homepage    = "https://www.bitwizard.nl/mtr/";
     license     = licenses.gpl2;
-    maintainers = with maintainers; [ koral orivej raskin ];
+    maintainers = with maintainers; [ koral orivej raskin globin ];
     platforms   = platforms.unix;
   };
 }

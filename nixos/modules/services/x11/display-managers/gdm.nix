@@ -42,10 +42,7 @@ in
     services.xserver.displayManager.gdm = {
 
       enable = mkEnableOption ''
-        GDM as the display manager.
-        <emphasis>GDM in NixOS is not well-tested with desktops other
-        than GNOME, so use with caution, as it could render the
-        system unusable.</emphasis>
+        GDM, the GNOME Display Manager
       '';
 
       debug = mkEnableOption ''
@@ -142,8 +139,6 @@ in
           GDM_X_SERVER_EXTRA_ARGS = toString
             (filter (arg: arg != "-terminate") cfg.xserverArgs);
           XDG_DATA_DIRS = "${cfg.session.desktops}/share/";
-          # Find the mouse
-          XCURSOR_PATH = "~/.icons:${pkgs.gnome3.adwaita-icon-theme}/share/icons";
         } // optionalAttrs (xSessionWrapper != null) {
           # Make GDM use this wrapper before running the session, which runs the
           # configured setupCommands. This relies on a patched GDM which supports
@@ -155,6 +150,11 @@ in
           mkdir -p /run/gdm/.config/pulse
           ln -sf ${pulseConfig} /run/gdm/.config/pulse/default.pa
           chown -R gdm:gdm /run/gdm/.config
+        '' + optionalString config.services.gnome3.gnome-initial-setup.enable ''
+          # Create stamp file for gnome-initial-setup to prevent run.
+          cat - > /run/gdm/.config/gnome-initial-setup-done <<- EOF
+          yes
+          EOF
         '';
       };
 
@@ -164,6 +164,10 @@ in
       "rc-local.service"
       "systemd-machined.service"
       "systemd-user-sessions.service"
+      "getty@tty1.service"
+    ];
+    systemd.services.display-manager.conflicts = [
+      "getty@tty1.service"
     ];
 
     systemd.services.display-manager.serviceConfig = {
@@ -262,7 +266,7 @@ in
         password required       pam_deny.so
 
         session  required       pam_succeed_if.so audit quiet_success user = gdm
-        session  required       pam_env.so envfile=${config.system.build.pamEnvironment}
+        session  required       pam_env.so conffile=${config.system.build.pamEnvironment} readenv=0
         session  optional       ${pkgs.systemd}/lib/security/pam_systemd.so
         session  optional       pam_keyinit.so force revoke
         session  optional       pam_permit.so

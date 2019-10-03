@@ -1,20 +1,35 @@
-{ buildGoPackage
+{ buildGoModule
 , fetchFromGitHub
 , lib
+, makeWrapper
+, ncurses
 }:
 
-buildGoPackage rec {
+buildGoModule rec {
   pname = "wtf";
-  version = "0.17.1";
+  version = "0.22.0";
+
+  overrideModAttrs = _oldAttrs : _oldAttrs // {
+    preBuild = ''export GOPROXY="https://gocenter.io"'';
+  };
 
   src = fetchFromGitHub {
     owner = "wtfutil";
     repo = pname;
     rev = "v${version}";
-    sha256 = "1qiwl6z5rraspjqry8dwnx8fgl9vv70sn5kgvh8074vl651yjq8c";
-  };
+    sha256 = "1d8lp94cw8rh9r9y64awxafhw9fmp33v3m761gzy500hrxal2rzb";
+   };
 
-  goPackagePath = "github.com/wtfutil/wtf";
+  modSha256 = "0m180571j4564py5mzdcbyypk71fdlp2vkfdwi6q85nd2q94sx6h";
+
+  buildFlagsArray = [ "-ldflags=-s -w -X main.version=${version}" ];
+
+  nativeBuildInputs = [ makeWrapper ];
+
+  postInstall = ''
+    mv "$out/bin/wtf" "$out/bin/wtfutil"
+    wrapProgram "$out/bin/wtfutil" --prefix PATH : "${ncurses.dev}/bin"
+  '';
 
   meta = with lib; {
     description = "The personal information dashboard for your terminal";

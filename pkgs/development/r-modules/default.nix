@@ -308,7 +308,7 @@ let
     RcppGSL = [ pkgs.gsl_1 ];
     RcppZiggurat = [ pkgs.gsl_1 ];
     reprex = [ pkgs.which ];
-    rgdal = [ pkgs.proj pkgs.gdal ];
+    rgdal = [ pkgs.proj.dev pkgs.gdal ];
     rgeos = [ pkgs.geos ];
     rggobi = [ pkgs.ggobi pkgs.gtk2.dev pkgs.libxml2.dev ];
     rgl = [ pkgs.libGLU_combined pkgs.xlibsWrapper ];
@@ -325,7 +325,7 @@ let
     rmatio = [ pkgs.zlib.dev ];
     Rmpfr = [ pkgs.gmp pkgs.mpfr.dev ];
     Rmpi = [ pkgs.openmpi ];
-    RMySQL = [ pkgs.zlib pkgs.mysql.connector-c pkgs.openssl.dev ];
+    RMySQL = [ pkgs.zlib pkgs.libmysqlclient pkgs.openssl.dev ];
     RNetCDF = [ pkgs.netcdf pkgs.udunits ];
     RODBCext = [ pkgs.libiodbc ];
     RODBC = [ pkgs.libiodbc ];
@@ -420,7 +420,7 @@ let
     odbc = [ pkgs.pkgconfig ];
     openssl = [ pkgs.pkgconfig ];
     pdftools = [ pkgs.pkgconfig ];
-    sf = [ pkgs.pkgconfig ];
+    sf = [ pkgs.pkgconfig pkgs.sqlite.dev pkgs.proj.dev ];
     showtext = [ pkgs.pkgconfig ];
     spate = [ pkgs.pkgconfig ];
     stringi = [ pkgs.pkgconfig ];
@@ -441,13 +441,17 @@ let
     nlme = [ pkgs.libiconv ];
     Matrix = [ pkgs.libiconv ];
     mgcv = [ pkgs.libiconv ];
+    minqa = [ pkgs.libiconv ];
     igraph = [ pkgs.libiconv ];
     ape = [ pkgs.libiconv ];
     expm = [ pkgs.libiconv ];
     mnormt = [ pkgs.libiconv ];
+    pan = [ pkgs.libiconv ];
     phangorn = [ pkgs.libiconv ];
     quadprog = [ pkgs.libiconv ];
+    randomForest = [ pkgs.libiconv ];
     sundialr = [ pkgs.libiconv ];
+    ucminf = [ pkgs.libiconv ];
   };
 
   packagesRequireingX = [
@@ -806,11 +810,11 @@ let
 
     RAppArmor = old.RAppArmor.overrideDerivation (attrs: {
       patches = [ ./patches/RAppArmor.patch ];
-      LIBAPPARMOR_HOME = "${pkgs.libapparmor}";
+      LIBAPPARMOR_HOME = pkgs.libapparmor;
     });
 
     RMySQL = old.RMySQL.overrideDerivation (attrs: {
-      MYSQL_DIR="${pkgs.mysql.connector-c}";
+      MYSQL_DIR="${pkgs.libmysqlclient}";
       preConfigure = ''
         patchShebangs configure
       '';

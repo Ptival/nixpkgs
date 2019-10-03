@@ -9,9 +9,8 @@ top-level attribute to `top-level/all-packages.nix`.
 1. Update the URL in `pkgs/development/libraries/qt-5/$VERSION/fetch.sh`.
 2. From the top of the Nixpkgs tree, run
    `./maintainers/scripts/fetch-kde-qt.sh > pkgs/development/libraries/qt-5/$VERSION/srcs.nix`.
-3. Update `qtCompatVersion` below if the minor version number changes.
-4. Check that the new packages build correctly.
-5. Commit the changes and open a pull request.
+3. Check that the new packages build correctly.
+4. Commit the changes and open a pull request.
 
 */
 
@@ -31,15 +30,27 @@ with stdenv.lib;
 
 let
 
-  qtCompatVersion = "5.9";
+  qtCompatVersion = srcs.qtbase.version;
 
   mirror = "http://download.qt.io";
   srcs = import ./srcs.nix { inherit fetchurl; inherit mirror; };
 
   patches = {
-    qtbase = [ ./qtbase.patch ./qtbase-fixguicmake.patch ];
+    qtbase = [
+      ./qtbase.patch
+      ./qtbase-fixguicmake.patch
+      ./qtbase-openssl_1_1.patch
+    ];
     qtdeclarative = [ ./qtdeclarative.patch ];
-    qtscript = [ ./qtscript.patch ];
+    qtscript = [
+      ./qtscript.patch
+      # needed due to changes in gcc 8.3, see https://bugreports.qt.io/browse/QTBUG-74196
+      # fixed in qtscript 5.12.2
+      (fetchpatch {
+        url = "https://github.com/qt/qtscript/commit/97ec1d1882a83c23c91f0f7daea48e05858d8c32.diff";
+        sha256 = "0khrapq13xzvxckzc9l7gqyjwibyd98vyqy6gmyhvsbm2kq8n6wi";
+      })
+    ];
     qtserialport = [ ./qtserialport.patch ];
     qttools = [ ./qttools.patch ];
     qtwebengine = [ ./qtwebengine-no-build-skip.patch ]
