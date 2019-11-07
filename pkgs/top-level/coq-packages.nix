@@ -2,9 +2,11 @@
 
 let
   mkCoqPackages' = self: coq:
-    let callPackage = self.callPackage; in {
+    let callPackage = self.callPackage; in rec {
       inherit coq;
       coqPackages = self;
+      mk-coq-ext-lib = callPackage ../development/coq-modules/coq-ext-lib;
+      mk-paco = callPackage ../development/coq-modules/paco;
 
       contribs = recurseIntoAttrs
         (callPackage ../development/coq-modules/contribs {});
@@ -34,6 +36,13 @@ let
       HoTT = callPackage ../development/coq-modules/HoTT {};
       interval = callPackage ../development/coq-modules/interval {};
       InfSeqExt = callPackage ../development/coq-modules/InfSeqExt {};
+      InteractionTrees = callPackage ../development/coq-modules/InteractionTrees {
+        inherit mk-coq-ext-lib mk-paco;
+      };
+      InteractionTrees_20191104 = callPackage ../development/coq-modules/InteractionTrees {
+        inherit mk-coq-ext-lib mk-paco;
+        version = "20191104";
+      };
       iris = callPackage ../development/coq-modules/iris {};
       ltac2 = callPackage ../development/coq-modules/ltac2 {};
       math-classes = callPackage ../development/coq-modules/math-classes { };
